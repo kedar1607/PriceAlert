@@ -8,8 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.navGraphViewModels
-
-import kedar.com.pricealertapp.services.TradeObserver
 import kedar.com.pricealertapp.viewmodels.CryptoViewModel
 import kedar.com.pricealertapp.viewmodels.StocksViewModel
 import kedar.com.websockets.R
