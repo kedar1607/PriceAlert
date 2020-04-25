@@ -1,0 +1,88 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.2"
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'consumer-rules.pro'
+        resValue "string", "POLYGON_IO_API_KEY", "MaRxgV_zEL_k4dWboARkazhMT_uIMfW7tU4L6i"
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation 'com.tinder.scarlet:scarlet:0.1.9'
+
+    implementation 'org.jboss.netty:netty:3.2.10.Final'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    //Moshi
+    implementation "com.squareup.moshi:moshi-kotlin:$rootProject.moshiVersion"
+    implementation "com.squareup.moshi:moshi-adapters:$rootProject.moshiVersion"
+    kapt "com.squareup.moshi:moshi-kotlin-codegen:$rootProject.moshiVersion"
+
+    // Coroutines
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.coroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$rootProject.coroutinesVersion"
+
+    //Glide
+    kapt "com.github.bumptech.glide:compiler:$rootProject.glideVersion"
+    implementation "com.github.bumptech.glide:glide:$rootProject.glideVersion"
+
+    implementation "androidx.legacy:legacy-support-v4:$rootProject.legacyVersion"
+    implementation "androidx.annotation:annotation:$rootProject.annotationVersion"
+    implementation "androidx.appcompat:appcompat:$rootProject.appCompatVersion"
+    implementation "androidx.constraintlayout:constraintlayout:$rootProject.constraintLayoutVersion"
+    implementation "androidx.core:core-ktx:$rootProject.ktxVersion"
+    implementation "androidx.fragment:fragment-ktx:$rootProject.fragmentVersion"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$rootProject.lifecycleVersion"
+    implementation "androidx.recyclerview:recyclerview:$rootProject.recyclerViewVersion"
+    implementation "androidx.work:work-runtime-ktx:$rootProject.workVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$rootProject.kotlin_version"
+    implementation "androidx.fragment:fragment:$rootProject.fragmentVersion"
+    implementation "androidx.paging:paging-runtime-ktx:2.1.1"
+
+    //Material
+    implementation "com.google.android.material:material:$rootProject.materialVersion"
+
+    //Lifecycle
+    implementation "androidx.lifecycle:lifecycle-extensions:$rootProject.lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$rootProject.lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$rootProject.lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-common-java8:$rootProject.lifecycleVersion"
+
+    //Navigation
+    implementation "androidx.navigation:navigation-fragment-ktx:$rootProject.navigationVersion"
+    implementation "androidx.navigation:navigation-ui-ktx:$rootProject.navigationVersion"
+
+    implementation "io.reactivex.rxjava2:rxjava:2.2.0"
+    implementation "com.tinder.scarlet:message-adapter-moshi:0.1.9"
+    implementation "com.tinder.scarlet:stream-adapter-rxjava2:0.1.9"
+    implementation "com.tinder.scarlet:websocket-okhttp:0.1.9"
+
+    //Tickr
+    implementation 'com.robinhood.ticker:ticker:2.0.2'
+
+}

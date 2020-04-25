@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/nav_main"
+    app:startDestination="@id/navigation_track">
+
+    <fragment
+        android:id="@+id/navigation_track"
+        android:label="@string/track"
+        android:name="kedar.com.pricealertapp.fragments.TrackingFragment" />
+    <fragment
+        android:id="@+id/navigation_dashboard"
+        android:name="kedar.com.pricealertapp.fragments.DashboardFragment"
+        android:label="@string/dashboard"/>
+</navigation>
