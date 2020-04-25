@@ -23,19 +23,20 @@ class DashboardFragment : Fragment(){
     private val stocksViewModel: StocksViewModel by navGraphViewModels(R.id.nav_main) { defaultViewModelProviderFactory }
 
 
-    private val cryptoAdapter = CryptoAdapter {
 
-    }
-
-    private val stocksAdapter = StockAdapter {
-
-    }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_dashboard, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        val cryptoAdapter = CryptoAdapter(viewLifecycleOwner = viewLifecycleOwner) {
+
+        }
+
+        val stocksAdapter = StockAdapter(viewLifecycleOwner = viewLifecycleOwner) {
+
+        }
         rcv_crypto_active.adapter = cryptoAdapter
         cryptoViewModel.liveMap.observe(viewLifecycleOwner, Observer {
             cryptoAdapter.submitList(it.values.toList())

@@ -11,7 +11,6 @@ import androidx.navigation.navGraphViewModels
 import kedar.com.pricealertapp.viewmodels.CryptoViewModel
 import kedar.com.pricealertapp.viewmodels.StocksViewModel
 import kedar.com.websockets.R
-import kedar.com.websockets.models.Trade
 import kotlinx.android.synthetic.main.fragment_tracking.*
 
 class TrackingFragment: Fragment() {

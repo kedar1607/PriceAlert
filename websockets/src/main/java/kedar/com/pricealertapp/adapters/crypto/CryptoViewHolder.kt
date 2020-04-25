@@ -1,7 +1,9 @@
 package kedar.com.pricealertapp.adapters.crypto
 
 import android.view.View
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import com.robinhood.ticker.TickerUtils
 
@@ -10,7 +12,8 @@ import kedar.com.websockets.R
 import kedar.com.websockets.models.CryptoTrade
 import kotlinx.android.synthetic.main.item_stock.view.*
 
-class CryptoViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+class CryptoViewHolder(view: View, private val viewLifecycleOwner: LifecycleOwner) :
+    RecyclerView.ViewHolder(view) {
 
     fun bind(
             cryptoTrade: MutableLiveData<CryptoTrade>,
@@ -18,13 +21,13 @@ class CryptoViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     ) {
 
         itemView.tv_price.setCharacterLists(TickerUtils.provideNumberList())
-        cryptoTrade.observeForever {
+        cryptoTrade.observe(viewLifecycleOwner, Observer {
             itemView.tag = it
             itemView.tv_symbol.text = it.pair
             val livePrice = it?.p
             itemView.tv_price.text = (livePrice?.toBigDecimal()?.getCurrencyFormat()
                 ?: itemView.context.getString(R.string.loading)).toString()
-        }
+        })
 
 //        itemView.btn_enable_disable.text = when (liveUpdateStock.enabled) {
 //            false -> {
