@@ -9,12 +9,9 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.lifecycle.LiveData
 import kedar.com.pricealertapp.activities.MainActivity
-import kedar.com.pricealertapp.services.ConnectionEstablisher
 import kedar.com.pricealertapp.services.MyRealTimeService
 import kedar.com.websockets.R
-import kedar.com.websockets.repos.PolygonCryptoRepo
 
 
 class AlertApplication: Application() {
@@ -22,13 +19,6 @@ class AlertApplication: Application() {
 
     lateinit var mService: MyRealTimeService
     var mBound: Boolean = false
-
-
-    private val connectionEstablisher = object : ConnectionEstablisher {
-        override fun connectionStarted(data: LiveData<String>) {
-
-        }
-    }
 
     /** Defines callbacks for service binding, passed to bindService()  */
     private val connection = object : ServiceConnection {
@@ -38,7 +28,6 @@ class AlertApplication: Application() {
             val binder = service as MyRealTimeService.LocalBinder
             mService = binder.getService()
             runAsForeground()
-            binder.setConnectionEstablished(connectionEstablisher)
             mBound = true
         }
 

@@ -8,6 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.navGraphViewModels
+import kedar.com.AlertApplication
+import kedar.com.pricealertapp.models.AlertSetUp
 import kedar.com.pricealertapp.viewmodels.CryptoViewModel
 import kedar.com.pricealertapp.viewmodels.StocksViewModel
 import kedar.com.websockets.R
@@ -33,6 +35,8 @@ class TrackingFragment: Fragment() {
         readHitPrice()
         btn_test.setOnClickListener { trackStock() }
         btn_disable.setOnClickListener {
+            val service = AlertApplication.instance.mService
+            service.disableAllAlerts()
         }
     }
 
@@ -73,11 +77,29 @@ class TrackingFragment: Fragment() {
         })
     }
 
+    /**
+     * Uncomment lines 86, 89 and comment 87, 90 to see the the changes to subscription in dashboard fragment.
+     */
     private fun trackStock(){
+        val service = AlertApplication.instance.mService
         if(!cb_isCrypto.isChecked) {
-            stocksViewModel.subscribe(et_symbol.text.toString())
+//            stocksViewModel.subscribe(et_symbol.text.toString())
+            service.openNewConnectionForStock(
+                AlertSetUp(
+                    symbol = et_symbol.text.toString(),
+                    hitPrice = et_price.text.toString().toDouble(),
+                    notificationId = service.notificationIdCount++
+                )
+            )
         }else{
-            cryptoViewModel.subscribe(et_symbol.text.toString())
+//            cryptoViewModel.subscribe(et_symbol.text.toString())
+            service.openNewConnectionForCrypto(
+                AlertSetUp(
+                    symbol = et_symbol.text.toString(),
+                    hitPrice = et_price.text.toString().toDouble(),
+                    notificationId = service.notificationIdCount++
+                )
+            )
         }
         et_price.text.clear()
         et_symbol.text.clear()

@@ -8,28 +8,40 @@ import android.content.Intent
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import androidx.collection.ArrayMap
+import androidx.collection.ArraySet
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import kedar.com.AlertApplication
 import kedar.com.pricealertapp.models.AlertSetUp
-import kedar.com.pricealertapp.models.LiveUpdateStock
 import kedar.com.websockets.R
 import kedar.com.websockets.models.CryptoTrade
+import kedar.com.websockets.models.Trade
 import kedar.com.websockets.repos.PolygonCryptoRepo
+import kedar.com.websockets.repos.PolygonStocksRepo
 import java.util.concurrent.Executors
 
 //Todo This needs to to worked on completely
 class MyRealTimeService : Service() {
     // Binder given to clients
     private val binder = LocalBinder()
-    lateinit var connectionEstablisher: ConnectionEstablisher
+
     val es = Executors.newFixedThreadPool(5)
-//    private val connectionMap = mutableMapOf<AlertSetUp, RealTimeDataConnection>()
-    private val myListObservers = mutableSetOf<MyListObserver>()
-
-
-//    private val polygonCryptoRepo = PolygonCryptoRepo(AlertApplication.instance)
 
     private lateinit var polygonCryptoRepo: PolygonCryptoRepo
+
+    private lateinit var polygonStocksRepo: PolygonStocksRepo
+
+
+    private val activeCryptoAlerts = ArraySet<AlertSetUp>()
+
+    private val activeStockAlerts = ArraySet<AlertSetUp>()
+
+    var isObservingCrypto = false
+
+    var isObservingStocks = false
+
+    var notificationIdCount = 1
 
 
     /**
@@ -39,57 +51,75 @@ class MyRealTimeService : Service() {
     inner class LocalBinder : Binder() {
         // Return this instance of LocalService so clients can call public methods
         fun getService(): MyRealTimeService = this@MyRealTimeService
-        fun setConnectionEstablished(connectionEstablisher: ConnectionEstablisher) {
-            this@MyRealTimeService.connectionEstablisher = connectionEstablisher
-        }
     }
 
     override fun onBind(intent: Intent): IBinder {
         return binder
     }
 
-    fun testPolygonCrypto(symbol: String){
-//        polygonCryptoRepo.openConnection(symbol, null)
-//        polygonCryptoRepo.tradeData.observeForever {
-//            val lastVAl = it.last()
-//            createNotification("price of ${lastVAl.pair} is $${lastVAl.p}", lastVAl)
-//        }
-    }
+    fun startObservingCrypto() {
+        polygonCryptoRepo.tradeData.observeForever { list ->
+            val stringToCryptoTrade = ArrayMap<String, CryptoTrade>()
+            list.forEach { stringToCryptoTrade[it.pair] = it }
+            val alertSetUpToCryptoTrade = ArrayMap<AlertSetUp, CryptoTrade>()
+            activeCryptoAlerts.forEach {
+                if (stringToCryptoTrade.containsKey(it.symbol))
+                    alertSetUpToCryptoTrade[it] = stringToCryptoTrade[it.symbol]
+            }
 
-    fun testRealTimeGlobalQuote(alertSetUp: AlertSetUp, isCrypto:Boolean = false){
-//        lateinit var realTimeDataConnection: RealTimeDataConnection
-//        val priceObservable = object : PriceObservable {
-//            override fun newPrice(stockInfo: StockInfo) {
-//                val priceBigDecimal = stockInfo.last.price.toBigDecimal()
-//                connectionMap.keys.first { alert ->
-//                    alert.symbol == alertSetUp.symbol
-//                }.livePrice = priceBigDecimal
-//                pushUpdateToAllObservers()
-//                if(priceBigDecimal > alertSetUp.tippingPoint) {
-//                    createNotification(getString(R.string.notification_update, stockInfo.symbol, priceBigDecimal.toString()), alertSetUp)
-//                }
-//            }
-//
-//        }
-        es.execute {
-//            realTimeDataConnection = RealTimeDataConnection()
-//            if(!isCrypto){
-////                realTimeDataConnection.startRealTimeStockPriceListening(alertSetUp.symbol, "MGM4OTI2ZmYtNWYzOS00MGU5LTg5MzMtYjE4N2UwZDVjZWNl", "JKI0YSQE2ORV3KCL")
-//                realTimeDataConnection.startRealTimeStockPriceListening(alertSetUp.symbol, getString(R.string.STREAM_IO_APP_TOKEN), getString(R.string.POLYGON_IO_API_KEY))
-//
-//            }else{
-//                realTimeDataConnection.startRealTimeCryptoPriceInUSDListening(alertSetUp.symbol, getString(R.string.STREAM_IO_APP_TOKEN), getString(R.string.APLHA_ADVANTAGE_API_KEY))
-//            }
-//            realTimeDataConnection.connect(priceObservable)
-//            alertSetUp.enabled = true
-//            connectionMap[alertSetUp] = realTimeDataConnection
+            alertSetUpToCryptoTrade.forEach {
+                if (it.value.p >= it.key.hitPrice)
+                    createNotification("price of ${it.key.symbol} is $${it.value.p}", it.key)
+            }
+
         }
     }
 
-    private fun createNotification(text: String, trade: CryptoTrade){
+    fun startObservingStocks() {
+        polygonStocksRepo.tradeData.observeForever { list ->
+            val stringToCryptoTrade = ArrayMap<String, Trade>()
+            list.forEach { stringToCryptoTrade[it.sym] = it }
+            val alertSetUpToTrade = ArrayMap<AlertSetUp, Trade>()
+            activeCryptoAlerts.forEach {
+                if (stringToCryptoTrade.containsKey(it.symbol))
+                    alertSetUpToTrade[it] = stringToCryptoTrade[it.symbol]
+            }
 
-        createNotificationChannel(trade.x.toString())
-        val builder = NotificationCompat.Builder(this, trade.x.toString())
+            alertSetUpToTrade.forEach {
+                if (it.value.p >= it.key.hitPrice)
+                    createNotification("price of ${it.key.symbol} is $${it.value.p}", it.key)
+            }
+
+        }
+    }
+
+    fun openNewConnectionForCrypto(cryptoTradeData: AlertSetUp) {
+        if (!::polygonCryptoRepo.isInitialized) {
+            polygonCryptoRepo = PolygonCryptoRepo(AlertApplication.instance)
+        }
+        if (!isObservingCrypto)
+            startObservingCrypto()
+        es.execute {
+            polygonCryptoRepo.openConnection(cryptoTradeData.symbol)
+            activeCryptoAlerts.add(cryptoTradeData)
+        }
+    }
+
+    fun openNewConnectionForStock(stockTradeData: AlertSetUp) {
+        if (!::polygonStocksRepo.isInitialized) {
+            polygonStocksRepo = PolygonStocksRepo(AlertApplication.instance)
+        }
+        if (!isObservingStocks)
+            startObservingStocks()
+        es.execute {
+            polygonCryptoRepo.openConnection(stockTradeData.symbol)
+            activeCryptoAlerts.add(stockTradeData)
+        }
+    }
+
+    private fun createNotification(text: String, trade: AlertSetUp) {
+        createNotificationChannel(trade.notificationId.toString())
+        val builder = NotificationCompat.Builder(this, trade.notificationId.toString())
                 .setSmallIcon(R.drawable.ic_launcher_background)
                 .setContentTitle(getString(R.string.stock_price_alert))
                 .setContentText(text)
@@ -97,7 +127,7 @@ class MyRealTimeService : Service() {
 
         with(NotificationManagerCompat.from(this)) {
             // notificationId is a unique int for each notification that you must define
-            notify(trade.x, builder.build())
+            notify(trade.notificationId, builder.build())
         }
     }
 
@@ -119,89 +149,22 @@ class MyRealTimeService : Service() {
     }
 
     fun disableAllAlerts(){
-//        connectionMap.forEach { t, u ->
-//            if(u.isConnected){
-//                u.disconnect()
-//                t.enabled = false
-//            }
-//        }
-        pushUpdateToAllObservers()
+        activeCryptoAlerts.forEach { disableCryptoAlert(it?.symbol, it) }
+        activeStockAlerts.forEach { disableStockAlert(it?.symbol, it) }
     }
 
-
-    fun disableAlert(liveUpdateStock: LiveUpdateStock){
-//        val key = connectionMap.keys.first { it.symbol == liveUpdateStock.symbol
-//                && it.magnitude == liveUpdateStock.magnitude
-//                && it.tippingPoint == liveUpdateStock.alertPrice }
-
-//        connectionMap[key]?.disconnect()
-//        key.enabled = false
-//        pushUpdateToAllObservers()
-    }
-
-
-    fun createNewAlerts(list: List<AlertSetUp>){
-        list.forEach {
-            testRealTimeGlobalQuote(it)
+    fun disableCryptoAlert(symbol: String?, alertSetUp: AlertSetUp?) {
+        if (::polygonCryptoRepo.isInitialized && symbol != null && alertSetUp != null) {
+            polygonCryptoRepo.unsubscribeTrades(symbol)
+            activeCryptoAlerts.remove(alertSetUp)
         }
     }
 
-    fun createNewAlert(alertSetUp: AlertSetUp, isCrypto: Boolean = false){
-        testRealTimeGlobalQuote(alertSetUp, isCrypto)
-    }
-
-    fun testMyservice() {
-//        val str = connectionMap.toString()
-//        print(str)
-    }
-
-//    fun getActiveStocks(): List<AlertSetUp> =
-//        connectionMap.keys.apply {
-////        forEach {
-////            if (connectionMap[it] != null && connectionMap[it]?.isConnected!!) it.enabled = true
-////        }
-//    }.toList()
-
-    fun addListObserver(myListObserver: MyListObserver){
-        myListObservers.add(myListObserver)
-    }
-
-    fun removeListObserver(myListObserver: MyListObserver){
-        myListObservers.remove(myListObserver)
-    }
-
-    fun activateAlert(liveUpdateStock: LiveUpdateStock){
-        //Todo enable single previous alert
-//        val key = connectionMap.keys.first { it.symbol == liveUpdateStock.symbol
-//                && it.magnitude == liveUpdateStock.magnitude
-//                && it.tippingPoint == liveUpdateStock.alertPrice }
-//        val priceObservable = object : PriceObservable {
-//            override fun newPrice(stockInfo: StockInfo) {
-//                val priceBigDecimal = stockInfo.last.price.toBigDecimal()
-//                connectionMap.keys.first { alert ->
-//                    alert.symbol == key.symbol
-//                }.livePrice = priceBigDecimal
-//                pushUpdateToAllObservers()
-//                if(priceBigDecimal > key.tippingPoint) {
-//                    createNotification(getString(R.string.notification_update, stockInfo.symbol, priceBigDecimal.toString()), key)
-//                }
-//            }
-//
-//        }
-//        es.execute {
-//            connectionMap[key]?.connect(priceObservable)
-//            key.enabled = true
-//            pushUpdateToAllObservers()
-//        }
-    }
-
-    private fun pushUpdateToAllObservers() {
-        if (myListObservers.size > 0) {
-            myListObservers.forEach {
-//                it.pushUpdate(connectionMap.keys.toList())
-            }
+    fun disableStockAlert(symbol: String?, alertSetUp: AlertSetUp?) {
+        if (::polygonStocksRepo.isInitialized && symbol != null && alertSetUp != null) {
+            polygonStocksRepo.unsubscribeTrades(symbol)
+            activeStockAlerts.remove(alertSetUp)
         }
     }
-
 }
 
