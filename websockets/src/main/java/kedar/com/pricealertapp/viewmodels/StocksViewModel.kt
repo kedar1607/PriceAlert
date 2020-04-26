@@ -6,31 +6,35 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kedar.com.AlertApplication
-import kedar.com.websockets.models.Trade
+import kedar.com.pricealertapp.models.StockTradeData
+import kedar.com.pricealertapp.models.transformToStockTradeData
 import kedar.com.websockets.repos.PolygonStocksRepo
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.collections.set
 
 
 class StocksViewModel: ViewModel() {
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 
-    private val map = ArrayMap<String, MutableLiveData<Trade>>()
-    private val _liveMap = MutableLiveData<ArrayMap<String, MutableLiveData<Trade>>>()
-    val liveMap: LiveData<ArrayMap<String, MutableLiveData<Trade>>> = _liveMap
+    private val map = ArrayMap<String, MutableLiveData<StockTradeData>>()
+    private val _liveMap = MutableLiveData<ArrayMap<String, MutableLiveData<StockTradeData>>>()
+    val liveMap: LiveData<ArrayMap<String, MutableLiveData<StockTradeData>>> = _liveMap
 
-    private val polygonCryptoRepo: PolygonStocksRepo = PolygonStocksRepo(AlertApplication.instance)
+    private val polygonStocksRepo: PolygonStocksRepo = PolygonStocksRepo(AlertApplication.instance)
+
 
     init {
-        polygonCryptoRepo.tradeData.observeForever{ tradeList ->
-            tradeList.forEach { cryptoTrade ->
+        polygonStocksRepo.tradeData.observeForever { tradeList ->
+            tradeList.forEach { trade ->
                 when{
-                    map.contains(cryptoTrade.sym) -> {
-                        map[cryptoTrade.sym]?.postValue(cryptoTrade)
+                    map.contains(trade.sym) -> {
+                        map[trade.sym]?.postValue(trade.transformToStockTradeData())
                     }
                     else -> {
-                        map[cryptoTrade.sym] = MutableLiveData(cryptoTrade)
+                        map[trade.sym] =
+                            MutableLiveData(trade.transformToStockTradeData())
                         _liveMap.postValue(map)
                     }
                 }
@@ -38,7 +42,7 @@ class StocksViewModel: ViewModel() {
         }
     }
 
-    fun observe(symbol: String): LiveData<Trade>?{
+    fun observe(symbol: String): LiveData<StockTradeData>? {
         if(!map.contains(symbol)){
             subscribe(symbol)
             throw IllegalAccessException("Please subscribe before observe.")
@@ -59,13 +63,17 @@ class StocksViewModel: ViewModel() {
 
     fun subscribe(symbol: String){
         viewModelScope.launch(dispatcher) {
-            polygonCryptoRepo.openConnection(symbol)
+            polygonStocksRepo.openConnection(symbol)
         }
     }
 
     fun unsubscribe(symbol: String){
         viewModelScope.launch(dispatcher){
-            polygonCryptoRepo.unsubscribeForTrades(symbol)
+            val success = polygonStocksRepo.unsubscribeTrades(symbol)
+            if (success) {
+                map.remove(symbol)
+                _liveMap.postValue(map)
+            }
         }
     }
 

@@ -29,7 +29,7 @@ class DashboardFragment : Fragment(){
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         val cryptoAdapter = CryptoAdapter(viewLifecycleOwner = viewLifecycleOwner) {
-
+            cryptoViewModel.unsubscribe("${it?.symbol}-USD")
         }
 
         val stocksAdapter = StockAdapter(viewLifecycleOwner = viewLifecycleOwner) {

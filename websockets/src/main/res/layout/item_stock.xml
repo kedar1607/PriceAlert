@@ -18,12 +18,12 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginEnd="16dp"
-            android:backgroundTint="#59AFBA"
+            android:backgroundTint="#5C9DC5"
             android:textColor="#F4EFEF"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="ENABLE" />
+            android:text="@string/delete_caps" />
 
         <!--        <TextView-->
         <!--            android:id="@+id/tv_price"-->

@@ -2,18 +2,21 @@ package kedar.com.pricealertapp.adapters.stocks
 
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.DiffUtil
-import kedar.com.pricealertapp.models.AlertSetUp
-import kedar.com.pricealertapp.models.LiveUpdateStock
-import kedar.com.websockets.models.CryptoTrade
-import kedar.com.websockets.models.Trade
+import kedar.com.pricealertapp.models.StockTradeData
 
 
-class StockItemDiffCallBack : DiffUtil.ItemCallback<MutableLiveData<Trade>>() {
-    override fun areItemsTheSame(oldItem: MutableLiveData<Trade>, newItem: MutableLiveData<Trade>): Boolean =
+class StockItemDiffCallBack : DiffUtil.ItemCallback<MutableLiveData<StockTradeData>>() {
+    override fun areItemsTheSame(
+        oldItem: MutableLiveData<StockTradeData>,
+        newItem: MutableLiveData<StockTradeData>
+    ): Boolean =
         oldItem.value == newItem.value
 
 
-    override fun areContentsTheSame(oldItem: MutableLiveData<Trade>, newItem: MutableLiveData<Trade>): Boolean {
-        return oldItem.value?.p == newItem.value?.p
+    override fun areContentsTheSame(
+        oldItem: MutableLiveData<StockTradeData>,
+        newItem: MutableLiveData<StockTradeData>
+    ): Boolean {
+        return oldItem.value?.symbol == newItem.value?.symbol
     }
 }

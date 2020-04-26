@@ -9,6 +9,7 @@
     <string name="loading">Loading…</string>
     <string name="enable_caps">ENABLE</string>
     <string name="disable_caps">DISABLE</string>
+    <string name="delete_caps">DELETE</string>
 
 
 </resources>

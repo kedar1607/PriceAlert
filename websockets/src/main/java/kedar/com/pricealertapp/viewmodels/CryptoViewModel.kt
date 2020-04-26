@@ -12,9 +12,6 @@ import kedar.com.websockets.repos.PolygonCryptoRepo
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlin.collections.List
-import kotlin.collections.contains
-import kotlin.collections.forEach
 import kotlin.collections.set
 
 
@@ -72,7 +69,11 @@ class CryptoViewModel: ViewModel() {
 
     fun unsubscribe(symbol: String){
         viewModelScope.launch(dispatcher){
-            polygonCryptoRepo.unsubscribeForTrades(symbol)
+            val success = polygonCryptoRepo.unsubscribeTrades(symbol)
+            if (success) {
+                map.remove(symbol)
+                _liveMap.postValue(map)
+            }
         }
     }
 

@@ -26,10 +26,7 @@ import okhttp3.OkHttpClient
 
 class PolygonCryptoRepo(val context: Context) {
 
-    private val _connectionState = MutableLiveData(ConnectionState.LOADING)
-    val connectionState: LiveData<ConnectionState> = _connectionState
-
-    private val disposables = mutableListOf<Disposable>()
+    private val disposables = mutableMapOf<String, Disposable>()
 
     private val _tradeData = MutableLiveData<List<CryptoTrade>>()
     val tradeData: LiveData<List<CryptoTrade>> = _tradeData
@@ -44,20 +41,13 @@ class PolygonCryptoRepo(val context: Context) {
 
     fun openConnection(symbol: String) {
         polygonService = scarletInstance.build().create()
-        val connectionOpen = polygonService.observeWebSocketEvent().subscribe {
-            when (it) {
-                is WebSocket.Event.OnConnectionOpened<*> -> {
-                    _connectionState.postValue(ConnectionState.CONNECTION_OPENED)
+        val connectionOpen = polygonService.observeWebSocketEvent()
+            .filter { it is WebSocket.Event.OnConnectionOpened<*> }.subscribe {
+                if (disposables.containsKey(symbol))
                     authenticate(symbol)
-                    Log.d(Logger.CONNECTION_LOGGER, "Connection opened")
-                }
-
-                is WebSocket.Event.OnConnectionFailed ->{
-                    _connectionState.postValue(ConnectionState.CONNECTION_FAILED)
-                }
-            }
+                Log.d(Logger.CONNECTION_LOGGER, "Connection opened")
         }
-        disposables.add(connectionOpen)
+        disposables[symbol] = connectionOpen
     }
 
     fun authenticate(symbol: String): Boolean {
@@ -66,16 +56,15 @@ class PolygonCryptoRepo(val context: Context) {
             params = context.getString(R.string.POLYGON_IO_API_KEY)
         )
         var success = false
-        _connectionState.postValue(
-            if (polygonService.sendAuthentication(authAction)) {
-                Log.d(Logger.CONNECTION_LOGGER, "Authenticated")
-                success = subscribeForTrades(symbol)
-                ConnectionState.AUTHENTICATED
-            } else {
-                Log.d(Logger.CONNECTION_LOGGER, "Authentication failed")
-                ConnectionState.AUTHENTICATION_FAILED
-            }
-        )
+
+        if (polygonService.sendAuthentication(authAction)) {
+            Log.d(Logger.CONNECTION_LOGGER, "Authenticated")
+            success = subscribeForTrades(symbol)
+            ConnectionState.AUTHENTICATED
+        } else {
+            Log.d(Logger.CONNECTION_LOGGER, "Authentication failed")
+            ConnectionState.AUTHENTICATION_FAILED
+        }
 
         return success
     }
@@ -94,27 +83,31 @@ class PolygonCryptoRepo(val context: Context) {
                 }
             }
             Log.d(Logger.CONNECTION_LOGGER, "Stream subscribed for $symbol")
-            disposables.add(disposable)
+            disposables[symbol] = disposable
         }
 
         return subscribed
 
     }
 
-    fun unsubscribeForTrades(symbol: String) {
-        polygonService.subscribeAction(
+    fun unsubscribeTrades(symbol: String): Boolean {
+        val result = polygonService.subscribeAction(
             SubscribeAction(
                 ACTION_UNSUBSCRIBE,
                 SUBSCRIBE_CRYPTO_TRADE + symbol
             )
         )
-    }
-
-    fun getCurrentState(): ConnectionState {
-        return _connectionState.value ?: ConnectionState.LOADING
+        if (result) {
+            disposables[symbol]?.dispose()
+            disposables.remove(symbol)
+        }
+        return result
     }
 
     fun cancelEverything() {
-        disposables.forEach { it.dispose() }
+        disposables.keys.forEach {
+            disposables[it]?.dispose()
+        }
+        disposables.clear()
     }
 }
