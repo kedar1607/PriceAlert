@@ -6,43 +6,27 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import com.robinhood.ticker.TickerUtils
-
 import kedar.com.pricealertapp.extentions.getCurrencyFormat
+import kedar.com.pricealertapp.models.CryptoTradeData
 import kedar.com.websockets.R
-import kedar.com.websockets.models.CryptoTrade
 import kotlinx.android.synthetic.main.item_stock.view.*
 
 class CryptoViewHolder(view: View, private val viewLifecycleOwner: LifecycleOwner) :
     RecyclerView.ViewHolder(view) {
 
     fun bind(
-            cryptoTrade: MutableLiveData<CryptoTrade>,
-            onClick: ((CryptoTrade?) -> Unit)
+        cryptoTrade: MutableLiveData<CryptoTradeData>,
+        onClick: ((CryptoTradeData?) -> Unit)
     ) {
 
         itemView.tv_price.setCharacterLists(TickerUtils.provideNumberList())
         cryptoTrade.observe(viewLifecycleOwner, Observer {
             itemView.tag = it
-            itemView.tv_symbol.text = it.pair
-            val livePrice = it?.p
+            itemView.tv_symbol.text = it.symbol
+            val livePrice = it?.currentPrice
             itemView.tv_price.text = (livePrice?.toBigDecimal()?.getCurrencyFormat()
                 ?: itemView.context.getString(R.string.loading)).toString()
         })
-
-//        itemView.btn_enable_disable.text = when (liveUpdateStock.enabled) {
-//            false -> {
-//                itemView.btn_enable_disable.isEnabled = true
-//                itemView.context.getString(R.string.enable_caps)
-//            }
-//            true -> {
-//                itemView.btn_enable_disable.isEnabled = true
-//                itemView.context.getString(R.string.disable_caps)
-//            }
-//            else -> {
-//                itemView.btn_enable_disable.isEnabled = false
-//                itemView.context.getString(R.string.loading)
-//            }
-//        }
 
         itemView.btn_enable_disable.setOnClickListener {
             onClick.invoke(cryptoTrade.value)

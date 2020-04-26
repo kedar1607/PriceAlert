@@ -5,13 +5,13 @@ import android.view.ViewGroup
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.ListAdapter
+import kedar.com.pricealertapp.models.CryptoTradeData
 import kedar.com.websockets.R
-import kedar.com.websockets.models.CryptoTrade
 
 class CryptoAdapter(
     private val viewLifecycleOwner: LifecycleOwner,
-    private val onClick: ((CryptoTrade?) -> Unit)
-) : ListAdapter<MutableLiveData<CryptoTrade>, CryptoViewHolder>(
+    private val onClick: ((CryptoTradeData?) -> Unit)
+) : ListAdapter<MutableLiveData<CryptoTradeData>, CryptoViewHolder>(
     CryptoItemDiffCallBack()
 ) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CryptoViewHolder {

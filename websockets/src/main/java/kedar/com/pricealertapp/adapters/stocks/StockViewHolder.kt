@@ -28,21 +28,6 @@ class StockViewHolder(view: View, private val viewLifecycleOwner: LifecycleOwner
                 ?: itemView.context.getString(R.string.loading)).toString()
         })
 
-//        itemView.btn_enable_disable.text = when (liveUpdateStock.enabled) {
-//            false -> {
-//                itemView.btn_enable_disable.isEnabled = true
-//                itemView.context.getString(R.string.enable_caps)
-//            }
-//            true -> {
-//                itemView.btn_enable_disable.isEnabled = true
-//                itemView.context.getString(R.string.disable_caps)
-//            }
-//            else -> {
-//                itemView.btn_enable_disable.isEnabled = false
-//                itemView.context.getString(R.string.loading)
-//            }
-//        }
-
         itemView.btn_enable_disable.setOnClickListener {
             onClick.invoke(trade.value)
         }

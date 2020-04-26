@@ -22,8 +22,6 @@ class DashboardFragment : Fragment(){
 
     private val stocksViewModel: StocksViewModel by navGraphViewModels(R.id.nav_main) { defaultViewModelProviderFactory }
 
-
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_dashboard, container, false)
     }
