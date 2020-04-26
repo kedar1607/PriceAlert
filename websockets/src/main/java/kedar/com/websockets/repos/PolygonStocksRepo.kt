@@ -17,7 +17,10 @@ import kedar.com.websockets.Constants.POLYGON_STOCK_BASE_URL
 import kedar.com.websockets.Constants.SUBSCRIBE_CRYPTO_TRADE
 import kedar.com.websockets.Logger
 import kedar.com.websockets.R
-import kedar.com.websockets.models.*
+import kedar.com.websockets.models.AuthAction
+import kedar.com.websockets.models.ConnectionState
+import kedar.com.websockets.models.SubscribeAction
+import kedar.com.websockets.models.Trade
 import kedar.com.websockets.services.PolygonStocksService
 import okhttp3.OkHttpClient
 
@@ -109,5 +112,9 @@ class PolygonStocksRepo(val context: Context) {
 
     fun getCurrentState(): ConnectionState {
         return _connectionState.value ?: ConnectionState.LOADING
+    }
+
+    fun cancelEverything() {
+        disposables.forEach { it.dispose() }
     }
 }

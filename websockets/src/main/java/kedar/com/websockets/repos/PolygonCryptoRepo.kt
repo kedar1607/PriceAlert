@@ -17,14 +17,12 @@ import kedar.com.websockets.Constants.POLYGON_CRYPTO_BASE_URL
 import kedar.com.websockets.Constants.SUBSCRIBE_CRYPTO_TRADE
 import kedar.com.websockets.Logger
 import kedar.com.websockets.R
-import kedar.com.websockets.datastructures.LiveEvent
-import kedar.com.websockets.models.*
+import kedar.com.websockets.models.AuthAction
+import kedar.com.websockets.models.ConnectionState
+import kedar.com.websockets.models.CryptoTrade
+import kedar.com.websockets.models.SubscribeAction
 import kedar.com.websockets.services.PolygonCryptoService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
-import java.util.*
 
 class PolygonCryptoRepo(val context: Context) {
 
@@ -114,5 +112,9 @@ class PolygonCryptoRepo(val context: Context) {
 
     fun getCurrentState(): ConnectionState {
         return _connectionState.value ?: ConnectionState.LOADING
+    }
+
+    fun cancelEverything() {
+        disposables.forEach { it.dispose() }
     }
 }
