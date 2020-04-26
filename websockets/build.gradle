@@ -15,7 +15,7 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
-        resValue "string", "POLYGON_IO_API_KEY", "MaRxgV_zEL_k4dWboARkazhMT_uIMfW7tU4L6i"
+        resValue "string", "POLYGON_IO_API_KEY", "Your_api_key"
     }
     kotlinOptions {
         jvmTarget = "1.8"
