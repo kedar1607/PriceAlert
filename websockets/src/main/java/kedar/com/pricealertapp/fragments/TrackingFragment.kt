@@ -78,7 +78,7 @@ class TrackingFragment: Fragment() {
     }
 
     /**
-     * Uncomment lines 86, 89 and comment 87, 90 to see the the changes to subscription in dashboard fragment.
+     * Uncomment lines 86, 89 and comment 87-93, 96-102 to see the the changes to subscription in dashboard fragment which uses view models
      */
     private fun trackStock(){
         val service = AlertApplication.instance.mService
