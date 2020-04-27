@@ -15,6 +15,7 @@ import kedar.com.websockets.Constants.ACTION_UNSUBSCRIBE
 import kedar.com.websockets.Constants.AUTH
 import kedar.com.websockets.Constants.POLYGON_STOCK_BASE_URL
 import kedar.com.websockets.Constants.SUBSCRIBE_CRYPTO_TRADE
+import kedar.com.websockets.Constants.SUBSCRIBE_STOCK_TRADE
 import kedar.com.websockets.Logger
 import kedar.com.websockets.R
 import kedar.com.websockets.models.AuthAction
@@ -73,7 +74,7 @@ class PolygonStocksRepo(val context: Context) {
         val subscribed = polygonService.subscribeAction(
             SubscribeAction(
                 ACTION_SUBSCRIBE,
-                SUBSCRIBE_CRYPTO_TRADE + symbol
+                SUBSCRIBE_STOCK_TRADE + symbol
             )
         )
         if (subscribed) {

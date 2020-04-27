@@ -58,6 +58,7 @@ class MyRealTimeService : Service() {
     }
 
     fun startObservingCrypto() {
+        isObservingCrypto = true
         polygonCryptoRepo.tradeData.observeForever { list ->
             val stringToCryptoTrade = ArrayMap<String, CryptoTrade>()
             list.forEach { stringToCryptoTrade[it.pair] = it }
@@ -76,13 +77,14 @@ class MyRealTimeService : Service() {
     }
 
     fun startObservingStocks() {
+        isObservingStocks = true
         polygonStocksRepo.tradeData.observeForever { list ->
-            val stringToCryptoTrade = ArrayMap<String, Trade>()
-            list.forEach { stringToCryptoTrade[it.sym] = it }
+            val stringToTrade = ArrayMap<String, Trade>()
+            list.forEach { stringToTrade[it.sym] = it }
             val alertSetUpToTrade = ArrayMap<AlertSetUp, Trade>()
-            activeCryptoAlerts.forEach {
-                if (stringToCryptoTrade.containsKey(it.symbol))
-                    alertSetUpToTrade[it] = stringToCryptoTrade[it.symbol]
+            activeStockAlerts.forEach {
+                if (stringToTrade.containsKey(it.symbol))
+                    alertSetUpToTrade[it] = stringToTrade[it.symbol]
             }
 
             alertSetUpToTrade.forEach {
@@ -112,8 +114,8 @@ class MyRealTimeService : Service() {
         if (!isObservingStocks)
             startObservingStocks()
         es.execute {
-            polygonCryptoRepo.openConnection(stockTradeData.symbol)
-            activeCryptoAlerts.add(stockTradeData)
+            polygonStocksRepo.openConnection(stockTradeData.symbol)
+            activeStockAlerts.add(stockTradeData)
         }
     }
 
